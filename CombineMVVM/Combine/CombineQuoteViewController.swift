@@ -1,5 +1,5 @@
 //
-//  QuoteViewController.swift
+//  CombineQuoteViewController.swift
 //  CombineMVVM
 //
 //  Created by 김정민 on 4/22/24.
@@ -8,7 +8,7 @@
 import UIKit
 import Combine
 
-class QuoteViewModel {
+class CombineQuoteViewModel {
     
     enum Input {
         case viewDidAppear
@@ -21,11 +21,11 @@ class QuoteViewModel {
         case toggleButton(isEnabled: Bool)
     }
 
-    private let quoteServiceType: QuoteServiceType
+    private let quoteServiceType: CombineQuoteService
     private let output: PassthroughSubject<Output, Never> = .init()
     private var cancellable = Set<AnyCancellable>()
     
-    init(quoteServiceType: QuoteServiceType = QuoteService()) {
+    init(quoteServiceType: CombineQuoteService = CombineQuoteService()) {
         self.quoteServiceType = quoteServiceType
     }
     
@@ -56,7 +56,7 @@ class QuoteViewModel {
     }
 }
 
-class QuoteViewController: UIViewController {
+class CombineQuoteViewController: UIViewController {
     
     private lazy var quoteLabel: UILabel = {
         let label = UILabel()
@@ -87,8 +87,8 @@ class QuoteViewController: UIViewController {
         return stackView
     }()
     
-    private let viewModel = QuoteViewModel()
-    private let input: PassthroughSubject<QuoteViewModel.Input, Never> = .init()
+    private let viewModel = CombineQuoteViewModel()
+    private let input: PassthroughSubject<CombineQuoteViewModel.Input, Never> = .init()
     private var cancellable = Set<AnyCancellable>()
     
     override func viewDidLoad() {
@@ -125,7 +125,7 @@ class QuoteViewController: UIViewController {
         let output = self.viewModel.transform(input: self.input.eraseToAnyPublisher())
         output
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] (event: QuoteViewModel.Output) in
+            .sink { [weak self] (event: CombineQuoteViewModel.Output) in
             switch event {
             case .fetchQuoteDidSucceed(let quote):
                 self?.quoteLabel.text = quote.content
@@ -143,11 +143,11 @@ class QuoteViewController: UIViewController {
     }
 }
 
-protocol QuoteServiceType {
+protocol CombineQuoteServiceType {
     func getRandomQuote() -> AnyPublisher<Quote, Error>
 }
 
-class QuoteService: QuoteServiceType {
+class CombineQuoteService: CombineQuoteServiceType {
     func getRandomQuote() -> AnyPublisher<Quote, any Error> {
         guard let url = URL(string: "https://api.quotable.io/random") else {
             return Empty().eraseToAnyPublisher()
